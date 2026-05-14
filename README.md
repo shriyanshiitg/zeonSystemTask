@@ -46,6 +46,9 @@ python src/evaluate_final.py
 
 # 5e. Combined evaluation
 python src/evaluate_combined.py
+
+# 5f. Train multiscale angle heads (64/96/128px crops) — produces final model
+python src/train_angle_multiscale.py
 ```
 
 ## Results
