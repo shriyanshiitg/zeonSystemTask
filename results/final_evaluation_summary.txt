@@ -1,0 +1,25 @@
+FINAL EVALUATION SUMMARY
+========================
+
+Detection Metrics:
+  True Positives (matched): 371
+  False Positives: 0
+  False Negatives: 0
+  Precision: 1.0000
+  Recall: 1.0000
+  F1 Score: 1.0000
+
+Angle Estimation Metrics (on matched detections):
+  Total matched: 371
+  Mean angle error: 95.58°
+  Median angle error: 98.86°
+  % within 10°: 6.2%
+  % within 20°: 11.9%
+  % within 30°: 14.8%
+
+Configuration:
+  YOLO weights: runs/obb/runs/tube_obb/weights/best.pt
+  Image size: (640, 480)
+  Device: cpu
+  Classical crop size: 96x96
+  IOU matching threshold: 30 pixels

@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg-info/
+dist/
+build/
+eggs/
+*.egg
+
+# PyTorch model weights
+*.pth
+!models/weights/*.pt
+
+# Training artifacts (too large for GitHub)
+runs/
+
+# Data images (uncomment if images should be excluded)
+# data/images/*.png
+# data/images/*.jpg
+
+# Environment
+.env
+.venv
+env/
+venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Cache
+*.cache
+miniforge3/
+
+# Logs
+*.log

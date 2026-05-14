@@ -1,0 +1,21 @@
+=== Combined YOLO + Angle Head Evaluation Results ===
+
+YOLO model: ./runs/obb/runs/tube_obb/weights/best.pt
+Angle head: angle_head.pth
+Confidence threshold: 0.25
+Distance threshold: 20px
+
+Total images: 70
+Total GT tubes: 371
+Total predictions: 371
+TP: 371, FP: 0, FN: 0
+
+Precision: 1.0000
+Recall: 1.0000
+F1 Score: 1.0000
+
+Mean angle error: 87.72 deg
+Median angle error: 84.50 deg
+Within 10 deg: 5.4%
+Within 20 deg: 8.9%
+Within 30 deg: 15.6%

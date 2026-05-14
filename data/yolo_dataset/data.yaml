@@ -1,0 +1,6 @@
+names:
+- tube
+nc: 1
+path: ./yolo_dataset
+train: images/train
+val: images/val
