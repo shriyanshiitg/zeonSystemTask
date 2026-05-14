@@ -42,4 +42,4 @@ Thumbs.db
 miniforge3/
 
 # Logs
-*.log
+*.log*.pt
