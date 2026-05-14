@@ -13,7 +13,6 @@ eggs/
 
 # PyTorch model weights
 *.pth
-!models/weights/*.pt
 
 # Training artifacts (too large for GitHub)
 runs/
