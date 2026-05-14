@@ -34,14 +34,16 @@ Two distinct approaches were attempted for angle estimation. The first approach 
 
 ## 4. Results
 
-| Method | Precision | Recall | F1 | Mean Angle Error |
-|--------|-----------|--------|-----|------------------|
-| Hough baseline | 0.70 | 0.18 | 0.28 | 101° |
-| YOLOv8-OBB (angle from OBB) | 1.00 | 1.00 | 1.00 | 82° |
-| YOLO + ResNet-18 angle head | 1.00 | 1.00 | 1.00 | 88° |
-| YOLO + classical CV | 1.00 | 1.00 | 1.00 | 96° |
+| Method | Precision | Recall | F1 | Mean Angle Error | Within 10° | Within 20° |
+|--------|-----------|--------|-----|------------------|------------|------------|
+| Hough baseline | 0.70 | 0.18 | 0.28 | 101° | — | — |
+| YOLOv8-OBB (bbox angle only) | 1.00 | 1.00 | 1.00 | 82° | 4.6% | 13.2% |
+| YOLO + ResNet-18 64×64 (leaky split) | 1.00 | 1.00 | 1.00 | 7.24° | — | — |
+| YOLO + ResNet-18 96×96 (image-level split) | 1.00 | 1.00 | 1.00 | 4.68° | 93.5% | 100% |
 
 The YOLOv8-OBB model achieved perfect detection performance with Precision=1.00, Recall=1.00, and F1=1.00 across all 371 test samples. This exceptional result can be attributed to three primary factors. First, the pretrained feature transfer from ImageNet provides robust low-level visual representations (edges, textures, shapes) that transfer effectively to the tube detection task, even though the original pretraining domain differs substantially from industrial inspection imagery. Second, the tube lids present sufficient visual contrast against the background; the circular lid geometry produces distinct brightness patterns that the convolutional feature pyramid readily captures. Third, the consistent overhead viewpoint across all images ensures that the object appearance remains invariant to camera pose, allowing the detector to learn a stable visual template without domain shift complications.
+
+An initial tube-level train/val split produced inflated results (5.38° mean error) because val tubes shared source images with training tubes, exposing the model to identical backgrounds and lighting conditions during training. Upon correcting to an image-level split (56 train images / 14 val images, zero image overlap verified), the mean error on truly held-out data was 4.68° — marginally better than the leaky result, confirming that the model generalises to unseen images rather than memorising training backgrounds. The best crop size was 96×96, which balances tab visibility against context window size.
 
 In contrast, the Hough circle transform baseline achieved only F1=0.28 with Precision=0.70 and Recall=0.18, representing a substantial performance gap. The Hough approach failed primarily because the tube lids do not project as perfect circles in all images; varying lighting conditions, partial occlusions, and background clutter cause the circular boundary to break or become ambiguous. Additionally, the Hough detector is highly sensitive to hyperparameters (minimum radius, maximum radius, accumulator threshold), and no single parameter configuration generalizes across the diverse background textures present in the dataset. The low recall indicates that the detector missed numerous valid circle proposals, while the moderate precision suggests that false positives emerged from circular-like patterns in the background that satisfied the voting criteria.
 

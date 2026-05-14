@@ -1,0 +1,30 @@
+MULTI-SCALE ANGLE HEAD COMPARISON
+===================================
+Experiment: 03 - Larger Crops + Higher Resolution
+
+Training Configuration:
+  - Epochs: 60
+  - Batch size: 16
+  - Learning rate: 0.0001
+  - Optimizer: Adam
+  - Augmentation: Random rotation, H/V flip, color jitter (brightness=0.3, contrast=0.3)
+
+Data Split:
+  - Train: 297 tubes
+  - Val: 74 tubes
+
+RESULTS COMPARISON
+------------------
+Crop Size    Mean Error   Median Error   Within 30°
+--------------------------------------------------
+64           6.52        ° 5.22          ° 100.0     %
+96           6.02        ° 5.45          ° 100.0     %
+128          6.20        ° 4.92          ° 100.0     %
+
+Best Model: angle_head_96.pth
+Best Mean Error: 6.02°
+Saved to: models/weights/angle_head_best.pth
+
+Notes:
+  - Larger crops may capture more tab detail
+  - Trade-off: larger crops are slower to process and may include more background noise

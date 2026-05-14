@@ -1,0 +1,37 @@
+TEST-TIME AUGMENTATION EVALUATION SUMMARY
+============================================
+Experiment: 02 - TTA on Angle Head
+
+Method: 10-way test-time augmentation with circular mean aggregation
+Augmentations:
+  - Original
+  - Rotations: 45°, 90°, 135°, 180°, 225°, 270°, 315° (angle adjusted on prediction)
+  - Horizontal flip (angle adjusted: 180° - angle)
+  - Vertical flip (angle adjusted: 360° - angle)
+
+Aggregation: Circular mean of all predictions
+
+Validation Samples: 75
+
+--- Without TTA ---
+  Mean angle error: 83.40°
+  Median angle error: 80.40°
+  % within 10°: 5.3%
+  % within 20°: 9.3%
+  % within 30°: 22.7%
+
+--- With TTA ---
+  Mean angle error: 81.98°
+  Median angle error: 81.45°
+  % within 10°: 13.3%
+  % within 20°: 16.0%
+  % within 30°: 22.7%
+
+Improvement:
+  Mean error reduction: 1.42°
+
+Notes:
+  - Uses ResNet-18 angle head from models/angle_head.pth
+  - Crop size: 64x64
+  - Device: cpu
+  - TTA helps resolve 180° ambiguity by considering multiple viewpoints

@@ -1,0 +1,22 @@
+=== Combined YOLO + Angle Head Evaluation (128x128) ===
+
+YOLO model: models/weights/best.pt
+Angle head: models/weights/angle_head_best.pth
+Crop size: 96x96
+Confidence threshold: 0.25
+Distance threshold: 20px
+
+Total images: 14
+Total GT tubes: 77
+Total predictions: 77
+TP: 77, FP: 0, FN: 0
+
+Precision: 1.0000
+Recall: 1.0000
+F1 Score: 1.0000
+
+Mean angle error: 4.68 deg
+Median angle error: 4.34 deg
+Within 10 deg: 93.5%
+Within 20 deg: 100.0%
+Within 30 deg: 100.0%

@@ -6,15 +6,25 @@ import cv2
 import numpy as np
 import pandas as pd
 import os
+from pathlib import Path
 from scipy.optimize import linear_sum_assignment
-import matplotlib.pyplot as plt
 from ultralytics import YOLO
 
 device = 'cpu'
 
+# Paths
+YOLO_WEIGHTS = Path('models/weights/best.pt')
+ANGLE_WEIGHTS = Path('models/weights/angle_head_best.pth')
+ANNOTATIONS_FILE = Path('data/annotations.csv')
+IMAGE_DIR = Path('data/images')
+OUTPUT_FILE = Path('results/final_combined_128_summary.txt')
+
+# Crop size (matching best model: 96)
+CROP_SIZE = 96
+
 # Load YOLO model
 print("Loading YOLO model...")
-yolo_model = YOLO('./runs/obb/runs/tube_obb/weights/best.pt')
+yolo_model = YOLO(str(YOLO_WEIGHTS))
 
 # Load angle head
 print("Loading angle head...")
@@ -28,7 +38,7 @@ class AngleHead(nn.Module):
         return self.backbone(x)
 
 angle_model = AngleHead().to(device)
-angle_model.load_state_dict(torch.load('angle_head.pth', map_location=device))
+angle_model.load_state_dict(torch.load(str(ANGLE_WEIGHTS), map_location=device))
 angle_model.eval()
 
 # Transform for angle head
@@ -39,9 +49,16 @@ transform = transforms.Compose([
 ])
 
 # Load GT
-gt_df = pd.read_csv('annotations.csv')
-image_files = sorted([f for f in os.listdir('./images') if f.endswith('.png')])
-print(f"Evaluating on {len(image_files)} images")
+gt_df = pd.read_csv(ANNOTATIONS_FILE)
+
+# Use SAME image-level val split as training
+all_images = sorted(gt_df['image'].unique())
+val_images = all_images[int(0.8 * len(all_images)):]  # Last 20% of images
+
+# Filter GT to only val images
+val_gt_df = gt_df[gt_df['image'].isin(val_images)]
+image_files = [f for f in val_images if (IMAGE_DIR / f).exists()]
+print(f"Evaluating on {len(image_files)} val images ({len(val_gt_df)} tubes)")
 
 conf_threshold = 0.25
 distance_threshold = 20
@@ -50,9 +67,8 @@ def circular_distance(a1, a2):
     diff = abs(a1 - a2)
     return min(diff, 360 - diff)
 
-def crop_and_predict_angle(img, cx, cy, model):
-    """Crop 64x64 around center and predict angle."""
-    crop_size = 64
+def crop_and_predict_angle(img, cx, cy, model, crop_size=CROP_SIZE):
+    """Crop around center and predict angle."""
     half = crop_size // 2
     h, w = img.shape[:2]
 
@@ -123,7 +139,7 @@ results = []
 all_angle_errors = []
 
 for img_name in image_files:
-    img_path = f'./images/{img_name}'
+    img_path = IMAGE_DIR / img_name
     img = cv2.imread(img_path)
 
     img_gt = gt_df[gt_df['image'] == img_name].reset_index(drop=True)
@@ -175,14 +191,16 @@ within_20 = sum(1 for e in all_angle_errors if e <= 20) / len(all_angle_errors) 
 within_30 = sum(1 for e in all_angle_errors if e <= 30) / len(all_angle_errors) * 100 if all_angle_errors else 0
 
 # Save summary
-with open('combined_evaluation_summary.txt', 'w') as f:
-    f.write("=== Combined YOLO + Angle Head Evaluation Results ===\n\n")
-    f.write(f"YOLO model: ./runs/obb/runs/tube_obb/weights/best.pt\n")
-    f.write(f"Angle head: angle_head.pth\n")
+OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
+with open(OUTPUT_FILE, 'w') as f:
+    f.write("=== Combined YOLO + Angle Head Evaluation (96x96) ===\n\n")
+    f.write(f"YOLO model: {YOLO_WEIGHTS}\n")
+    f.write(f"Angle head: {ANGLE_WEIGHTS}\n")
+    f.write(f"Crop size: {CROP_SIZE}x{CROP_SIZE}\n")
     f.write(f"Confidence threshold: {conf_threshold}\n")
     f.write(f"Distance threshold: {distance_threshold}px\n\n")
     f.write(f"Total images: {len(image_files)}\n")
-    f.write(f"Total GT tubes: {len(gt_df)}\n")
+    f.write(f"Total GT tubes: {len(val_gt_df)}\n")
     f.write(f"Total predictions: {sum(r['num_preds'] for r in results)}\n")
     f.write(f"TP: {total_tp}, FP: {total_fp}, FN: {total_fn}\n\n")
     f.write(f"Precision: {precision:.4f}\n")
@@ -194,7 +212,7 @@ with open('combined_evaluation_summary.txt', 'w') as f:
     f.write(f"Within 20 deg: {within_20:.1f}%\n")
     f.write(f"Within 30 deg: {within_30:.1f}%\n")
 
-print("\n=== Combined Evaluation Summary ===")
+print("\n=== Combined Evaluation Summary (128x128) ===")
 print(f"Precision: {precision:.4f}")
 print(f"Recall: {recall:.4f}")
 print(f"F1 Score: {f1:.4f}")
@@ -203,4 +221,4 @@ print(f"Median Angle Error: {median_angle_error:.2f} deg")
 print(f"Within 10°: {within_10:.1f}%")
 print(f"Within 20°: {within_20:.1f}%")
 print(f"Within 30°: {within_30:.1f}%")
-print("\nSaved combined_evaluation_summary.txt")
+print(f"\nSaved to {OUTPUT_FILE}")

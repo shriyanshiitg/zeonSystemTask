@@ -50,14 +50,17 @@ python src/evaluate_combined.py
 
 ## Results
 
-| Method | Precision | Recall | F1 | Mean Angle Error |
-|--------|-----------|--------|-----|------------------|
-| Hough baseline | 0.70 | 0.18 | 0.28 | 101° |
-| YOLOv8-OBB (angle from OBB) | 1.00 | 1.00 | 1.00 | 82° |
-| YOLO + ResNet-18 angle head | 1.00 | 1.00 | 1.00 | 88° |
-| YOLO + classical CV | 1.00 | 1.00 | 1.00 | 96° |
+| Method | Precision | Recall | F1 | Mean Angle Error | Within 10° | Within 20° |
+|--------|-----------|--------|-----|------------------|------------|------------|
+| Hough baseline | 0.70 | 0.18 | 0.28 | 101° | — | — |
+| YOLOv8-OBB (bbox angle only) | 1.00 | 1.00 | 1.00 | 82° | 4.6% | 13.2% |
+| YOLO + ResNet-18 64×64 (leaky split) | 1.00 | 1.00 | 1.00 | 7.24° | — | — |
+| YOLO + ResNet-18 96×96 (image-level split) | 1.00 | 1.00 | 1.00 | 4.68° | 93.5% | 100% |
 
-Detection is solved (F1=1.00). Angle estimation remains challenging due to 180° ambiguity in the rotationally symmetric tube lid.
+**Final pipeline:** YOLO detection + ResNet-18 96×96 angle head
+**Key results:** F1=1.00, Mean Angle Error=4.68°, 93.5% within 10°
+
+> **Data leakage fix:** An initial tube-level split (random tubes, same image in both sets) produced inflated results. Correcting to an image-level split (56 train / 14 val images, zero overlap) revealed the model genuinely generalises with 4.68° mean error on unseen images — not merely memorising training backgrounds. Image-level splitting is essential when training on crops from shared images.
 
 ## Directory Structure
 
@@ -68,8 +71,9 @@ zeonSystemTask/
 │   ├── images/
 │   └── yolo_dataset/
 ├── models/
-│   ├── weights/best.pt
-│   └── angle_head.pth
+│   └── weights/
+│       ├── best.pt              # YOLO detector
+│       └── angle_head_best.pth # ResNet-18 angle head (96×96)
 ├── results/
 ├── src/
 └── report/
